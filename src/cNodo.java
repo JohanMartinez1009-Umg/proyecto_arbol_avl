@@ -14,6 +14,9 @@ public class cNodo {
         return empleado;
     }
 
+    public void setEmpleado(cEmpleado empleado) {
+        this.empleado = empleado;
+    }
     public cNodo getIzquierdo() {
         return izquierdo;
     }

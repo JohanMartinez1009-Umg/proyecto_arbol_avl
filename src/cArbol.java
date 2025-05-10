@@ -9,9 +9,11 @@ public class cArbol {
         return nodo == null ? 0 : nodo.getAltura();
     }
 
+    // Aqui empezo el cambio
     private int max(int a, int b) {
-        return (a > b) ? a : b;
+        return Math.max(a, b);
     }
+    // Aqui termino el cambio
 
     private cNodo rotarDerecha(cNodo y) {
         cNodo x = y.getIzquierdo();
@@ -86,68 +88,63 @@ public class cArbol {
         return resultado != null ? resultado.getEmpleado() : null;
     }
 
-    private cNodo buscar(cNodo raiz, int noEmpleado) {
-        if (raiz == null || raiz.getEmpleado().getNoEmpleado() == noEmpleado)
-            return raiz;
+    private cNodo buscar(cNodo nodo, int noEmpleado) {
+        if (nodo == null || nodo.getEmpleado().getNoEmpleado() == noEmpleado)
+            return nodo;
 
-        if (raiz.getEmpleado().getNoEmpleado() < noEmpleado)
-            return buscar(raiz.getDerecho(), noEmpleado);
-
-        return buscar(raiz.getIzquierdo(), noEmpleado);
+        if (noEmpleado < nodo.getEmpleado().getNoEmpleado())
+            return buscar(nodo.getIzquierdo(), noEmpleado);
+        else
+            return buscar(nodo.getDerecho(), noEmpleado);
     }
 
     public void eliminar(int noEmpleado) {
         raiz = eliminar(raiz, noEmpleado);
     }
 
-    private cNodo eliminar(cNodo raiz, int noEmpleado) {
-        if (raiz == null) return raiz;
+    private cNodo eliminar(cNodo nodo, int noEmpleado) {
+        if (nodo == null) return nodo;
 
-        if (noEmpleado < raiz.getEmpleado().getNoEmpleado())
-            raiz.setIzquierdo(eliminar(raiz.getIzquierdo(), noEmpleado));
-        else if (noEmpleado > raiz.getEmpleado().getNoEmpleado())
-            raiz.setDerecho(eliminar(raiz.getDerecho(), noEmpleado));
+        if (noEmpleado < nodo.getEmpleado().getNoEmpleado())
+            nodo.setIzquierdo(eliminar(nodo.getIzquierdo(), noEmpleado));
+        else if (noEmpleado > nodo.getEmpleado().getNoEmpleado())
+            nodo.setDerecho(eliminar(nodo.getDerecho(), noEmpleado));
         else {
-            if (raiz.getIzquierdo() == null || raiz.getDerecho() == null) {
-                cNodo temp = raiz.getIzquierdo() != null ? raiz.getIzquierdo() : raiz.getDerecho();
-                if (temp == null) {
-                    temp = raiz;
-                    raiz = null;
-                } else {
-                    raiz = temp;
-                }
+            // Aqui empezo el cambio
+            if (nodo.getIzquierdo() == null || nodo.getDerecho() == null) {
+                nodo = (nodo.getIzquierdo() != null) ? nodo.getIzquierdo() : nodo.getDerecho();
             } else {
-                cNodo temp = minValueNode(raiz.getDerecho());
-                raiz.getEmpleado().setNombreCompleto(temp.getEmpleado().getNombreCompleto());
-                raiz.getEmpleado().setPuesto(temp.getEmpleado().getPuesto());
-                raiz.setDerecho(eliminar(raiz.getDerecho(), temp.getEmpleado().getNoEmpleado()));
+                cNodo temp = minValueNode(nodo.getDerecho());
+                nodo.setEmpleado(temp.getEmpleado()); // Copiar todo el empleado
+                nodo.setDerecho(eliminar(nodo.getDerecho(), temp.getEmpleado().getNoEmpleado()));
             }
+            // Aqui termino el cambio
         }
 
-        if (raiz == null) return raiz;
+        if (nodo == null) return null; // Nodo eliminado, no hay necesidad de balancear
 
-        raiz.setAltura(1 + max(altura(raiz.getIzquierdo()), altura(raiz.getDerecho())));
+        nodo.setAltura(1 + max(altura(nodo.getIzquierdo()), altura(nodo.getDerecho())));
 
-        int balance = obtenerBalance(raiz);
+        int balance = obtenerBalance(nodo);
 
         // Rotaciones para balancear después de eliminar
-        if (balance > 1 && obtenerBalance(raiz.getIzquierdo()) >= 0)
-            return rotarDerecha(raiz);
+        if (balance > 1 && obtenerBalance(nodo.getIzquierdo()) >= 0)
+            return rotarDerecha(nodo);
 
-        if (balance > 1 && obtenerBalance(raiz.getIzquierdo()) < 0) {
-            raiz.setIzquierdo(rotarIzquierda(raiz.getIzquierdo()));
-            return rotarDerecha(raiz);
+        if (balance > 1 && obtenerBalance(nodo.getIzquierdo()) < 0) {
+            nodo.setIzquierdo(rotarIzquierda(nodo.getIzquierdo()));
+            return rotarDerecha(nodo);
         }
 
-        if (balance < -1 && obtenerBalance(raiz.getDerecho()) <= 0)
-            return rotarIzquierda(raiz);
+        if (balance < -1 && obtenerBalance(nodo.getDerecho()) <= 0)
+            return rotarIzquierda(nodo);
 
-        if (balance < -1 && obtenerBalance(raiz.getDerecho()) > 0) {
-            raiz.setDerecho(rotarDerecha(raiz.getDerecho()));
-            return rotarIzquierda(raiz);
+        if (balance < -1 && obtenerBalance(nodo.getDerecho()) > 0) {
+            nodo.setDerecho(rotarDerecha(nodo.getDerecho()));
+            return rotarIzquierda(nodo);
         }
 
-        return raiz;
+        return nodo; // Importante: devolver el nodo actual (posiblemente rotado)
     }
 
     private cNodo minValueNode(cNodo nodo) {
