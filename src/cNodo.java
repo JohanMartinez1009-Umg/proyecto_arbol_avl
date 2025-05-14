@@ -7,6 +7,8 @@ public class cNodo {
     public cNodo(cEmpleado empleado) {
         this.empleado = empleado;
         this.altura = 1;
+        this.izquierdo = null;
+        this.derecho = null;
     }
 
     // Getters y Setters
@@ -17,6 +19,7 @@ public class cNodo {
     public void setEmpleado(cEmpleado empleado) {
         this.empleado = empleado;
     }
+
     public cNodo getIzquierdo() {
         return izquierdo;
     }

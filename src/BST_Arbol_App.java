@@ -10,45 +10,43 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JFileChooser;
 
-public class AVL_Arbol_App extends JFrame {
-    private cArbol arbolAVL;
+public class BST_Arbol_App extends JFrame {
+    private cArbol arbolBST;
     private PanelArbol panelArbol;
     private JTextField campoBusqueda;
     private JTextArea infoEmpleado;
 
-    public AVL_Arbol_App() {
-        arbolAVL = new cArbol();
-        // cargarDatosDesdeCSV("empleados.csv"); // Comenta o elimina esta línea
-
-        setTitle("Gestión de Empleados - Árbol AVL");
+    public BST_Arbol_App() {
+        arbolBST = new cArbol();
+        setTitle("Gestión de Empleados - Árbol de Búsqueda Binaria");
         setSize(1000, 700);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
         panelArbol = new PanelArbol();
-        panelArbol.setRaiz(arbolAVL.getRaiz());
+        panelArbol.setRaiz(arbolBST.getRaiz());
         add(panelArbol, BorderLayout.CENTER);
 
         infoEmpleado = new JTextArea(10, 30);
         infoEmpleado.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(infoEmpleado);
 
-        JPanel panelControl = new JPanel(new GridLayout(1, 6, 10, 10)); // Ajustamos las columnas
+        JPanel panelControl = new JPanel(new GridLayout(1, 6, 10, 10));
         campoBusqueda = new JTextField(10);
         JButton botonBuscar = new JButton("Buscar");
         JButton botonActualizar = new JButton("Actualizar");
         JButton botonEliminar = new JButton("Eliminar");
-        JButton botonInsertar = new JButton("Insertar"); // Nuevo botón
-        JButton botonImportarCSV = new JButton("Importar CSV"); // Nuevo botón
+        JButton botonInsertar = new JButton("Insertar");
+        JButton botonImportarCSV = new JButton("Importar CSV");
 
         botonActualizar.addActionListener(e -> {
             try {
                 int noEmpleado = Integer.parseInt(campoBusqueda.getText());
-                cNodo nodoAActualizar = arbolAVL.getNodo(noEmpleado);
+                cNodo nodoAActualizar = arbolBST.getNodo(noEmpleado);
                 if (nodoAActualizar != null) {
                     panelArbol.setNodoEncontrado(nodoAActualizar);
                     panelArbol.repaint();
-                    actualizarEmpleado(); // Llama a actualizarEmpleado DESPUÉS de la selección visual
+                    actualizarEmpleado();
                 } else {
                     JOptionPane.showMessageDialog(this, "Empleado no encontrado", "Error", JOptionPane.ERROR_MESSAGE);
                     panelArbol.setNodoEncontrado(null);
@@ -61,15 +59,15 @@ public class AVL_Arbol_App extends JFrame {
             }
         });
 
-        // El ActionListener del botón Eliminar se mantiene similar para la selección visual
         botonEliminar.addActionListener(e -> {
             try {
                 int noEmpleado = Integer.parseInt(campoBusqueda.getText());
-                cNodo nodoAEliminar = arbolAVL.getNodo(noEmpleado);
+                cNodo nodoAEliminar = arbolBST.getNodo(noEmpleado);
                 if (nodoAEliminar != null) {
                     panelArbol.setNodoEncontrado(nodoAEliminar);
                     panelArbol.repaint();
-                    eliminarEmpleado(); // Llama a eliminarEmpleado DESPUÉS de la selección visual
+                    limpiarInfoEmpleado(); // Limpiar la salida de texto antes de la eliminación
+                    eliminarEmpleadoConSustitucion(); // Usamos el método con sustitución
                 } else {
                     JOptionPane.showMessageDialog(this, "Empleado no encontrado", "Error", JOptionPane.ERROR_MESSAGE);
                     panelArbol.setNodoEncontrado(null);
@@ -83,8 +81,8 @@ public class AVL_Arbol_App extends JFrame {
         });
 
         botonBuscar.addActionListener(e -> buscarEmpleado());
-        botonInsertar.addActionListener(e -> insertarEmpleado()); // ActionListener para el nuevo botón
-        botonImportarCSV.addActionListener(e -> importarDesdeCSV()); // ActionListener para el nuevo botón
+        botonInsertar.addActionListener(e -> insertarEmpleado());
+        botonImportarCSV.addActionListener(e -> importarDesdeCSV());
 
         panelControl.add(new JLabel("No. Empleado:"));
         panelControl.add(campoBusqueda);
@@ -92,10 +90,14 @@ public class AVL_Arbol_App extends JFrame {
         panelControl.add(botonActualizar);
         panelControl.add(botonEliminar);
         panelControl.add(botonInsertar);
-        panelControl.add(botonImportarCSV); // Agregamos el botón Importar CSV
+        panelControl.add(botonImportarCSV);
 
         add(panelControl, BorderLayout.NORTH);
         add(scrollPane, BorderLayout.SOUTH);
+    }
+
+    private void limpiarInfoEmpleado() {
+        infoEmpleado.setText("");
     }
 
     private void importarDesdeCSV() {
@@ -149,15 +151,14 @@ public class AVL_Arbol_App extends JFrame {
 
                     cEmpleado nuevoEmpleado = new cEmpleado(noEmpleado, nombre, puesto);
                     long inicio = System.nanoTime();
-                    arbolAVL.insertar(nuevoEmpleado);
+                    arbolBST.insertar(nuevoEmpleado);
                     long fin = System.nanoTime();
                     double tiempo = (fin - inicio) / 1e6;
 
-                    // Asegúrate de que el PanelArbol esté utilizando la raíz actualizada del árbol
-                    panelArbol.setRaiz(arbolAVL.getRaiz());
-                    panelArbol.setNodoEncontrado(null); // Limpiar cualquier nodo resaltado
-                    panelArbol.repaint(); // Solicitar que el panel se vuelva a dibujar
-                    guardarDatosEnCSV("empleados.csv"); // Guardar en CSV después de insertar
+                    panelArbol.setRaiz(arbolBST.getRaiz());
+                    panelArbol.setNodoEncontrado(null);
+                    panelArbol.repaint();
+                    guardarDatosEnCSV("empleados.csv");
 
                     JOptionPane.showMessageDialog(this,
                             "Empleado insertado en " + tiempo + " ms",
@@ -187,7 +188,7 @@ public class AVL_Arbol_App extends JFrame {
 
     private void guardarDatosEnCSV(String archivo) {
         try (FileWriter fw = new FileWriter(archivo)) {
-            List<cEmpleado> empleados = arbolAVL.obtenerTodosLosEmpleadosEnOrden(); // Asumiendo este método en cArbol
+            List<cEmpleado> empleados = arbolBST.obtenerTodosLosEmpleadosEnOrden();
             for (cEmpleado empleado : empleados) {
                 fw.write(empleado.getNoEmpleado() + "," + empleado.getNombreCompleto() + "," + empleado.getPuesto() + "\n");
             }
@@ -207,7 +208,7 @@ public class AVL_Arbol_App extends JFrame {
                 if (datos.length == 3) {
                     try {
                         String noEmpleadoStr = datos[0].trim();
-                        if (noEmpleadoStr.length() >= 3 && noEmpleadoStr.length() <= 4 && noEmpleadoStr.matches("\\d+")) {
+                        if (noEmpleadoStr.length() >= 1 && noEmpleadoStr.length() <= 4 && noEmpleadoStr.matches("\\d+")) {
                             int noEmpleado = Integer.parseInt(noEmpleadoStr);
                             empleados.add(new cEmpleado(noEmpleado, datos[1].trim(), datos[2].trim()));
                         } else {
@@ -220,12 +221,12 @@ public class AVL_Arbol_App extends JFrame {
                     JOptionPane.showMessageDialog(this, "Formato incorrecto en la línea: " + linea + " (debe ser noEmpleado,nombre,puesto)", "Error de formato", JOptionPane.ERROR_MESSAGE);
                 }
             }
-            arbolAVL.vaciarArbol(); // Limpiar el árbol existente
+            arbolBST.vaciarArbol();
             for (cEmpleado emp : empleados) {
-                arbolAVL.insertar(emp); // <--- El balanceo ocurre aquí durante la inserción
+                arbolBST.insertar(emp);
             }
-            panelArbol.setRaiz(arbolAVL.getRaiz());
-            panelArbol.setNodoEncontrado(null); // Limpiar cualquier nodo resaltado
+            panelArbol.setRaiz(arbolBST.getRaiz());
+            panelArbol.setNodoEncontrado(null);
             panelArbol.repaint();
             JOptionPane.showMessageDialog(this, "Datos importados exitosamente desde " + archivo, "Importación Exitosa", JOptionPane.INFORMATION_MESSAGE);
 
@@ -239,13 +240,13 @@ public class AVL_Arbol_App extends JFrame {
         try {
             long inicio = System.nanoTime();
             int noEmpleado = Integer.parseInt(campoBusqueda.getText());
-            cEmpleado empleado = arbolAVL.buscar(noEmpleado);
+            cEmpleado empleado = arbolBST.buscar(noEmpleado);
 
             if (empleado != null) {
-                cNodo nodo = arbolAVL.getNodo(noEmpleado);
+                cNodo nodo = arbolBST.getNodo(noEmpleado);
 
                 String info = empleado.toString();
-                int saltos = arbolAVL.obtenerSaltos(noEmpleado);
+                int saltos = arbolBST.obtenerSaltos(noEmpleado);
                 info += "\nSaltos desde la raíz: " + saltos + "\n";
 
                 infoEmpleado.setText(info);
@@ -270,16 +271,15 @@ public class AVL_Arbol_App extends JFrame {
             int noEmpleado = Integer.parseInt(campoBusqueda.getText());
             long inicio = System.nanoTime();
 
-            cEmpleado empleado = arbolAVL.buscar(noEmpleado);
+            cEmpleado empleado = arbolBST.buscar(noEmpleado);
 
             if (empleado != null) {
-                // Crear diálogo de actualización
                 JPanel panel = new JPanel(new GridLayout(4, 2, 5, 5));
                 panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
                 JTextField campoNombre = new JTextField(empleado.getNombreCompleto());
                 JTextField campoPuesto = new JTextField(empleado.getPuesto());
-                int saltos = arbolAVL.obtenerSaltos(noEmpleado);
+                int saltos = arbolBST.obtenerSaltos(noEmpleado);
 
                 panel.add(new JLabel("Número Empleado:"));
                 panel.add(new JLabel(String.valueOf(noEmpleado)));
@@ -299,18 +299,16 @@ public class AVL_Arbol_App extends JFrame {
                 );
 
                 if (resultado == JOptionPane.OK_OPTION) {
-                    // Actualizar datos
                     empleado.setNombreCompleto(campoNombre.getText());
                     empleado.setPuesto(campoPuesto.getText());
 
-                    // Actualizar visualización
                     infoEmpleado.setText(empleado.toString());
                     String info = empleado.toString();
-                    int saltosActualizado = arbolAVL.obtenerSaltos(noEmpleado);
+                    int saltosActualizado = arbolBST.obtenerSaltos(noEmpleado);
                     info += "\nSaltos desde la raíz: " + saltosActualizado + "\n";
                     infoEmpleado.setText(info);
                     panelArbol.repaint();
-                    guardarDatosEnCSV("empleados.csv"); // Guardar en CSV después de actualizar
+                    guardarDatosEnCSV("empleados.csv");
 
                     long fin = System.nanoTime();
                     double tiempo = (fin - inicio) / 1e6;
@@ -333,44 +331,39 @@ public class AVL_Arbol_App extends JFrame {
         }
     }
 
-    private void eliminarEmpleado() {
+    private void eliminarEmpleadoConSustitucion() {
         try {
             int noEmpleado = Integer.parseInt(campoBusqueda.getText());
             long inicio = System.nanoTime();
 
-            cEmpleado empleado = arbolAVL.buscar(noEmpleado);
+            cNodo nodoAEliminar = arbolBST.getNodo(noEmpleado);
+            cEmpleado empleadoAEliminar = arbolBST.buscar(noEmpleado);
 
-            if (empleado != null) {
-                // Confirmar eliminación
+            if (empleadoAEliminar != null) {
                 int confirmacion = JOptionPane.showConfirmDialog(
                         this,
-                        "¿Está seguro de eliminar al empleado?\n" + empleado.toString(),
+                        "¿Está seguro de eliminar al empleado?\n" + empleadoAEliminar.toString(),
                         "Confirmar Eliminación",
                         JOptionPane.YES_NO_OPTION,
                         JOptionPane.WARNING_MESSAGE
                 );
 
                 if (confirmacion == JOptionPane.YES_OPTION) {
-                    // Obtener el nodo antes de eliminarlo para resaltarlo
-                    cNodo nodoEliminado = arbolAVL.getNodo(noEmpleado);
-
-                    // Eliminar empleado
-                    arbolAVL.eliminar(noEmpleado);
-
-                    // Asegúrate de que el PanelArbol esté utilizando la raíz actualizada del árbol
-                    panelArbol.setRaiz(arbolAVL.getRaiz());
-                    panelArbol.setNodoEncontrado(nodoEliminado); // Establecer el nodo eliminado
-                    panelArbol.repaint(); // Solicitar que el panel se vuelva a dibujar
-                    guardarDatosEnCSV("empleados.csv"); // Guardar en CSV después de eliminar
+                    arbolBST.eliminarConSustitucionPredecesor(noEmpleado); // Llama al nuevo método
+                    panelArbol.setRaiz(arbolBST.getRaiz());
+                    panelArbol.setNodoEncontrado(null); // Limpiar la selección
+                    panelArbol.repaint();
+                    guardarDatosEnCSV("empleados.csv");
+                    limpiarInfoEmpleado(); // Limpiar la salida de texto después de la eliminación
 
                     long fin = System.nanoTime();
                     double tiempo = (fin - inicio) / 1e6;
                     JOptionPane.showMessageDialog(this,
-                            "Empleado eliminado en " + tiempo + " ms",
+                            "Empleado eliminado con sustitución en " + tiempo + " ms",
                             "Eliminación Exitosa",
                             JOptionPane.INFORMATION_MESSAGE);
                 } else {
-                    panelArbol.setNodoEncontrado(null); // Limpiar selección si no se eliminó
+                    panelArbol.setNodoEncontrado(null);
                     panelArbol.repaint();
                 }
             } else {
@@ -389,7 +382,7 @@ public class AVL_Arbol_App extends JFrame {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            AVL_Arbol_App app = new AVL_Arbol_App();
+            BST_Arbol_App app = new BST_Arbol_App();
             app.setVisible(true);
         });
     }

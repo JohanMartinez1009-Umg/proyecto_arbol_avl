@@ -32,8 +32,17 @@ public class cEmpleado {
 
     @Override
     public String toString() {
-        return "No.Empleado: " + noEmpleado +
+        return "No. Empleado: " + noEmpleado +
                 "\nNombre: " + nombreCompleto +
                 "\nPuesto: " + puesto;
+    }
+
+    // Método equals para comparar objetos cEmpleado
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        cEmpleado otro = (cEmpleado) obj;
+        return noEmpleado == otro.noEmpleado;
     }
 }
