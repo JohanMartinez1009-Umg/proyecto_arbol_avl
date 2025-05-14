@@ -31,13 +31,14 @@ public class BST_Arbol_App extends JFrame {
         infoEmpleado.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(infoEmpleado);
 
-        JPanel panelControl = new JPanel(new GridLayout(1, 6, 10, 10));
+        JPanel panelControl = new JPanel(new GridLayout(1, 7, 10, 10));
         campoBusqueda = new JTextField(10);
         JButton botonBuscar = new JButton("Buscar");
         JButton botonActualizar = new JButton("Actualizar");
         JButton botonEliminar = new JButton("Eliminar");
         JButton botonInsertar = new JButton("Insertar");
         JButton botonImportarCSV = new JButton("Importar CSV");
+        JButton botonLimpiarSalida = new JButton("Limpiar Salida"); // Nuevo botón
 
         botonActualizar.addActionListener(e -> {
             try {
@@ -83,6 +84,7 @@ public class BST_Arbol_App extends JFrame {
         botonBuscar.addActionListener(e -> buscarEmpleado());
         botonInsertar.addActionListener(e -> insertarEmpleado());
         botonImportarCSV.addActionListener(e -> importarDesdeCSV());
+        botonLimpiarSalida.addActionListener(e -> limpiarInfoEmpleado()); // Acción para el nuevo botón
 
         panelControl.add(new JLabel("No. Empleado:"));
         panelControl.add(campoBusqueda);
@@ -91,6 +93,7 @@ public class BST_Arbol_App extends JFrame {
         panelControl.add(botonEliminar);
         panelControl.add(botonInsertar);
         panelControl.add(botonImportarCSV);
+        panelControl.add(botonLimpiarSalida); // Agregar el nuevo botón al panel de control
 
         add(panelControl, BorderLayout.NORTH);
         add(scrollPane, BorderLayout.SOUTH);
@@ -208,7 +211,7 @@ public class BST_Arbol_App extends JFrame {
                 if (datos.length == 3) {
                     try {
                         String noEmpleadoStr = datos[0].trim();
-                        if (noEmpleadoStr.length() >= 1 && noEmpleadoStr.length() <= 4 && noEmpleadoStr.matches("\\d+")) {
+                        if (noEmpleadoStr.length() >= 3 && noEmpleadoStr.length() <= 4 && noEmpleadoStr.matches("\\d+")) {
                             int noEmpleado = Integer.parseInt(noEmpleadoStr);
                             empleados.add(new cEmpleado(noEmpleado, datos[1].trim(), datos[2].trim()));
                         } else {
