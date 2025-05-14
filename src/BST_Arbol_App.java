@@ -15,6 +15,7 @@ public class BST_Arbol_App extends JFrame {
     private PanelArbol panelArbol;
     private JTextField campoBusqueda;
     private JTextArea infoEmpleado;
+    private String rutaArchivoCSV = null;
 
     public BST_Arbol_App() {
         arbolBST = new cArbol();
@@ -38,7 +39,7 @@ public class BST_Arbol_App extends JFrame {
         JButton botonEliminar = new JButton("Eliminar");
         JButton botonInsertar = new JButton("Insertar");
         JButton botonImportarCSV = new JButton("Importar CSV");
-        JButton botonLimpiarSalida = new JButton("Limpiar Salida"); // Nuevo botón
+        JButton botonLimpiarSalida = new JButton("Limpiar Salida");
 
         botonActualizar.addActionListener(e -> {
             try {
@@ -67,8 +68,8 @@ public class BST_Arbol_App extends JFrame {
                 if (nodoAEliminar != null) {
                     panelArbol.setNodoEncontrado(nodoAEliminar);
                     panelArbol.repaint();
-                    limpiarInfoEmpleado(); // Limpiar la salida de texto antes de la eliminación
-                    eliminarEmpleadoConSustitucion(); // Usamos el método con sustitución
+                    limpiarInfoEmpleado();
+                    eliminarEmpleadoConSustitucion();
                 } else {
                     JOptionPane.showMessageDialog(this, "Empleado no encontrado", "Error", JOptionPane.ERROR_MESSAGE);
                     panelArbol.setNodoEncontrado(null);
@@ -84,7 +85,7 @@ public class BST_Arbol_App extends JFrame {
         botonBuscar.addActionListener(e -> buscarEmpleado());
         botonInsertar.addActionListener(e -> insertarEmpleado());
         botonImportarCSV.addActionListener(e -> importarDesdeCSV());
-        botonLimpiarSalida.addActionListener(e -> limpiarInfoEmpleado()); // Acción para el nuevo botón
+        botonLimpiarSalida.addActionListener(e -> limpiarInfoEmpleado());
 
         panelControl.add(new JLabel("No. Empleado:"));
         panelControl.add(campoBusqueda);
@@ -93,7 +94,7 @@ public class BST_Arbol_App extends JFrame {
         panelControl.add(botonEliminar);
         panelControl.add(botonInsertar);
         panelControl.add(botonImportarCSV);
-        panelControl.add(botonLimpiarSalida); // Agregar el nuevo botón al panel de control
+        panelControl.add(botonLimpiarSalida);
 
         add(panelControl, BorderLayout.NORTH);
         add(scrollPane, BorderLayout.SOUTH);
@@ -109,7 +110,8 @@ public class BST_Arbol_App extends JFrame {
 
         if (resultado == JFileChooser.APPROVE_OPTION) {
             java.io.File archivoSeleccionado = fileChooser.getSelectedFile();
-            cargarDatosDesdeCSV(archivoSeleccionado.getAbsolutePath());
+            rutaArchivoCSV = archivoSeleccionado.getAbsolutePath();
+            cargarDatosDesdeCSV(rutaArchivoCSV);
         }
     }
 
@@ -161,7 +163,7 @@ public class BST_Arbol_App extends JFrame {
                     panelArbol.setRaiz(arbolBST.getRaiz());
                     panelArbol.setNodoEncontrado(null);
                     panelArbol.repaint();
-                    guardarDatosEnCSV("empleados.csv");
+                    guardarDatosEnCSV();
 
                     JOptionPane.showMessageDialog(this,
                             "Empleado insertado en " + tiempo + " ms",
@@ -189,16 +191,20 @@ public class BST_Arbol_App extends JFrame {
         }
     }
 
-    private void guardarDatosEnCSV(String archivo) {
-        try (FileWriter fw = new FileWriter(archivo)) {
-            List<cEmpleado> empleados = arbolBST.obtenerTodosLosEmpleadosEnOrden();
-            for (cEmpleado empleado : empleados) {
-                fw.write(empleado.getNoEmpleado() + "," + empleado.getNombreCompleto() + "," + empleado.getPuesto() + "\n");
+    private void guardarDatosEnCSV() {
+        if (rutaArchivoCSV != null) {
+            try (FileWriter fw = new FileWriter(rutaArchivoCSV)) {
+                List<cEmpleado> empleados = arbolBST.obtenerTodosLosEmpleadosEnOrden();
+                for (cEmpleado empleado : empleados) {
+                    fw.write(empleado.getNoEmpleado() + "," + empleado.getNombreCompleto() + "," + empleado.getPuesto() + "\n");
+                }
+                JOptionPane.showMessageDialog(this, "Datos guardados en " + rutaArchivoCSV, "Guardado Exitoso", JOptionPane.INFORMATION_MESSAGE);
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(this, "Error al guardar los datos en el archivo CSV: " + e.getMessage(),
+                        "Error", JOptionPane.ERROR_MESSAGE);
             }
-            JOptionPane.showMessageDialog(this, "Datos guardados en " + archivo, "Guardado Exitoso", JOptionPane.INFORMATION_MESSAGE);
-        } catch (IOException e) {
-            JOptionPane.showMessageDialog(this, "Error al guardar los datos en el archivo CSV: " + e.getMessage(),
-                    "Error", JOptionPane.ERROR_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(this, "Por favor, importe un archivo CSV primero.", "Advertencia", JOptionPane.WARNING_MESSAGE);
         }
     }
 
@@ -206,6 +212,7 @@ public class BST_Arbol_App extends JFrame {
         List<cEmpleado> empleados = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(archivo))) {
             String linea;
+            arbolBST.vaciarArbol();
             while ((linea = br.readLine()) != null) {
                 String[] datos = linea.split(",");
                 if (datos.length == 3) {
@@ -224,7 +231,6 @@ public class BST_Arbol_App extends JFrame {
                     JOptionPane.showMessageDialog(this, "Formato incorrecto en la línea: " + linea + " (debe ser noEmpleado,nombre,puesto)", "Error de formato", JOptionPane.ERROR_MESSAGE);
                 }
             }
-            arbolBST.vaciarArbol();
             for (cEmpleado emp : empleados) {
                 arbolBST.insertar(emp);
             }
@@ -311,7 +317,7 @@ public class BST_Arbol_App extends JFrame {
                     info += "\nSaltos desde la raíz: " + saltosActualizado + "\n";
                     infoEmpleado.setText(info);
                     panelArbol.repaint();
-                    guardarDatosEnCSV("empleados.csv");
+                    guardarDatosEnCSV();
 
                     long fin = System.nanoTime();
                     double tiempo = (fin - inicio) / 1e6;
@@ -352,12 +358,12 @@ public class BST_Arbol_App extends JFrame {
                 );
 
                 if (confirmacion == JOptionPane.YES_OPTION) {
-                    arbolBST.eliminarConSustitucionPredecesor(noEmpleado); // Llama al nuevo método
+                    arbolBST.eliminarConSustitucionPredecesor(noEmpleado);
                     panelArbol.setRaiz(arbolBST.getRaiz());
-                    panelArbol.setNodoEncontrado(null); // Limpiar la selección
+                    panelArbol.setNodoEncontrado(null);
                     panelArbol.repaint();
-                    guardarDatosEnCSV("empleados.csv");
-                    limpiarInfoEmpleado(); // Limpiar la salida de texto después de la eliminación
+                    guardarDatosEnCSV();
+                    limpiarInfoEmpleado();
 
                     long fin = System.nanoTime();
                     double tiempo = (fin - inicio) / 1e6;
