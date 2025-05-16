@@ -1,3 +1,6 @@
+import java.util.ArrayList;
+import java.util.List;
+
 public class cArbol {
     private cNodo raiz;
 
@@ -5,167 +8,165 @@ public class cArbol {
         return raiz;
     }
 
-    private int altura(cNodo nodo) {
-        return nodo == null ? 0 : nodo.getAltura();
+    protected cNodo getNodo(int noEmpleado) {
+        return buscarNodo(raiz, noEmpleado);
     }
 
-    private int max(int a, int b) {
-        return (a > b) ? a : b;
+    public int obtenerSaltos(int noEmpleado) {
+        return obtenerSaltosRecursivo(raiz, noEmpleado, 0);
     }
 
-    private cNodo rotarDerecha(cNodo y) {
-        cNodo x = y.getIzquierdo();
-        cNodo T2 = x.getDerecho();
+    private int obtenerSaltosRecursivo(cNodo nodo, int noEmpleado, int nivel) {
+        if (nodo == null) return -1;
+        if (nodo.getEmpleado().getNoEmpleado() == noEmpleado) return nivel;
 
-        x.setDerecho(y);
-        y.setIzquierdo(T2);
-
-        y.setAltura(max(altura(y.getIzquierdo()), altura(y.getDerecho())) + 1);
-        x.setAltura(max(altura(x.getIzquierdo()), altura(x.getDerecho())) + 1);
-
-        return x;
-    }
-
-    private cNodo rotarIzquierda(cNodo x) {
-        cNodo y = x.getDerecho();
-        cNodo T2 = y.getIzquierdo();
-
-        y.setIzquierdo(x);
-        x.setDerecho(T2);
-
-        x.setAltura(max(altura(x.getIzquierdo()), altura(x.getDerecho())) + 1);
-        y.setAltura(max(altura(y.getIzquierdo()), altura(y.getDerecho())) + 1);
-
-        return y;
-    }
-
-    private int obtenerBalance(cNodo nodo) {
-        return nodo == null ? 0 : altura(nodo.getIzquierdo()) - altura(nodo.getDerecho());
+        if (noEmpleado < nodo.getEmpleado().getNoEmpleado()) {
+            return obtenerSaltosRecursivo(nodo.getIzquierdo(), noEmpleado, nivel + 1);
+        } else {
+            return obtenerSaltosRecursivo(nodo.getDerecho(), noEmpleado, nivel + 1);
+        }
     }
 
     public void insertar(cEmpleado empleado) {
-        raiz = insertar(raiz, empleado);
+        raiz = insertarNodo(raiz, empleado);
     }
 
-    private cNodo insertar(cNodo nodo, cEmpleado empleado) {
-        if (nodo == null) return new cNodo(empleado);
-
-        if (empleado.getNoEmpleado() < nodo.getEmpleado().getNoEmpleado())
-            nodo.setIzquierdo(insertar(nodo.getIzquierdo(), empleado));
-        else if (empleado.getNoEmpleado() > nodo.getEmpleado().getNoEmpleado())
-            nodo.setDerecho(insertar(nodo.getDerecho(), empleado));
-        else
-            return nodo;
-
-        nodo.setAltura(1 + max(altura(nodo.getIzquierdo()), altura(nodo.getDerecho())));
-
-        int balance = obtenerBalance(nodo);
-
-        // Rotaciones para balancear el árbol
-        if (balance > 1 && empleado.getNoEmpleado() < nodo.getIzquierdo().getEmpleado().getNoEmpleado())
-            return rotarDerecha(nodo);
-
-        if (balance < -1 && empleado.getNoEmpleado() > nodo.getDerecho().getEmpleado().getNoEmpleado())
-            return rotarIzquierda(nodo);
-
-        if (balance > 1 && empleado.getNoEmpleado() > nodo.getIzquierdo().getEmpleado().getNoEmpleado()) {
-            nodo.setIzquierdo(rotarIzquierda(nodo.getIzquierdo()));
-            return rotarDerecha(nodo);
+    private cNodo insertarNodo(cNodo nodo, cEmpleado empleado) {
+        if (nodo == null) {
+            return new cNodo(empleado);
         }
 
-        if (balance < -1 && empleado.getNoEmpleado() < nodo.getDerecho().getEmpleado().getNoEmpleado()) {
-            nodo.setDerecho(rotarDerecha(nodo.getDerecho()));
-            return rotarIzquierda(nodo);
+        if (empleado.getNoEmpleado() < nodo.getEmpleado().getNoEmpleado()) {
+            nodo.setIzquierdo(insertarNodo(nodo.getIzquierdo(), empleado));
+        } else if (empleado.getNoEmpleado() > nodo.getEmpleado().getNoEmpleado()) {
+            nodo.setDerecho(insertarNodo(nodo.getDerecho(), empleado));
+        } else {
+            // Si el número de empleado ya existe, podrías optar por no insertar
+            // o manejar la duplicidad de alguna otra manera (por ejemplo, lanzar una excepción).
+            // Por ahora, simplemente no hacemos nada.
         }
-
         return nodo;
     }
 
     public cEmpleado buscar(int noEmpleado) {
-        cNodo resultado = buscar(raiz, noEmpleado);
+        cNodo resultado = buscarNodo(raiz, noEmpleado);
         return resultado != null ? resultado.getEmpleado() : null;
     }
 
-    private cNodo buscar(cNodo raiz, int noEmpleado) {
-        if (raiz == null || raiz.getEmpleado().getNoEmpleado() == noEmpleado)
-            return raiz;
+    private cNodo buscarNodo(cNodo nodo, int noEmpleado) {
+        if (nodo == null || nodo.getEmpleado().getNoEmpleado() == noEmpleado) {
+            return nodo;
+        }
 
-        if (raiz.getEmpleado().getNoEmpleado() < noEmpleado)
-            return buscar(raiz.getDerecho(), noEmpleado);
-
-        return buscar(raiz.getIzquierdo(), noEmpleado);
+        if (noEmpleado < nodo.getEmpleado().getNoEmpleado()) {
+            return buscarNodo(nodo.getIzquierdo(), noEmpleado);
+        } else {
+            return buscarNodo(nodo.getDerecho(), noEmpleado);
+        }
     }
 
     public void eliminar(int noEmpleado) {
-        raiz = eliminar(raiz, noEmpleado);
+        raiz = eliminarNodo(raiz, noEmpleado);
     }
 
-    private cNodo eliminar(cNodo raiz, int noEmpleado) {
-        if (raiz == null) return raiz;
+    private cNodo eliminarNodo(cNodo nodo, int noEmpleado) {
+        if (nodo == null) {
+            return null;
+        }
 
-        if (noEmpleado < raiz.getEmpleado().getNoEmpleado())
-            raiz.setIzquierdo(eliminar(raiz.getIzquierdo(), noEmpleado));
-        else if (noEmpleado > raiz.getEmpleado().getNoEmpleado())
-            raiz.setDerecho(eliminar(raiz.getDerecho(), noEmpleado));
-        else {
-            if (raiz.getIzquierdo() == null || raiz.getDerecho() == null) {
-                cNodo temp = raiz.getIzquierdo() != null ? raiz.getIzquierdo() : raiz.getDerecho();
-                if (temp == null) {
-                    temp = raiz;
-                    raiz = null;
-                } else {
-                    raiz = temp;
-                }
-            } else {
-                cNodo temp = minValueNode(raiz.getDerecho());
-                raiz.getEmpleado().setNombreCompleto(temp.getEmpleado().getNombreCompleto());
-                raiz.getEmpleado().setPuesto(temp.getEmpleado().getPuesto());
-                raiz.setDerecho(eliminar(raiz.getDerecho(), temp.getEmpleado().getNoEmpleado()));
+        if (noEmpleado < nodo.getEmpleado().getNoEmpleado()) {
+            nodo.setIzquierdo(eliminarNodo(nodo.getIzquierdo(), noEmpleado));
+        } else if (noEmpleado > nodo.getEmpleado().getNoEmpleado()) {
+            nodo.setDerecho(eliminarNodo(nodo.getDerecho(), noEmpleado));
+        } else {
+            // Nodo encontrado
+            if (nodo.getIzquierdo() == null) {
+                return nodo.getDerecho();
+            } else if (nodo.getDerecho() == null) {
+                return nodo.getIzquierdo();
             }
+
+            // Nodo con dos hijos: encontrar el sucesor inorden (el menor en el subárbol derecho)
+            cNodo sucesor = encontrarMinimo(nodo.getDerecho());
+            nodo.setEmpleado(sucesor.getEmpleado());
+            nodo.setDerecho(eliminarNodo(nodo.getDerecho(), sucesor.getEmpleado().getNoEmpleado()));
         }
-
-        if (raiz == null) return raiz;
-
-        raiz.setAltura(1 + max(altura(raiz.getIzquierdo()), altura(raiz.getDerecho())));
-
-        int balance = obtenerBalance(raiz);
-
-        // Rotaciones para balancear después de eliminar
-        if (balance > 1 && obtenerBalance(raiz.getIzquierdo()) >= 0)
-            return rotarDerecha(raiz);
-
-        if (balance > 1 && obtenerBalance(raiz.getIzquierdo()) < 0) {
-            raiz.setIzquierdo(rotarIzquierda(raiz.getIzquierdo()));
-            return rotarDerecha(raiz);
-        }
-
-        if (balance < -1 && obtenerBalance(raiz.getDerecho()) <= 0)
-            return rotarIzquierda(raiz);
-
-        if (balance < -1 && obtenerBalance(raiz.getDerecho()) > 0) {
-            raiz.setDerecho(rotarDerecha(raiz.getDerecho()));
-            return rotarIzquierda(raiz);
-        }
-
-        return raiz;
+        return nodo;
     }
 
-    private cNodo minValueNode(cNodo nodo) {
-        cNodo current = nodo;
-        while (current.getIzquierdo() != null)
-            current = current.getIzquierdo();
-        return current;
+    private cNodo encontrarMinimo(cNodo nodo) {
+        while (nodo.getIzquierdo() != null) {
+            nodo = nodo.getIzquierdo();
+        }
+        return nodo;
     }
 
     public void inOrden() {
-        inOrden(raiz);
+        inOrdenRecursivo(raiz);
     }
 
-    private void inOrden(cNodo nodo) {
+    private void inOrdenRecursivo(cNodo nodo) {
         if (nodo != null) {
-            inOrden(nodo.getIzquierdo());
+            inOrdenRecursivo(nodo.getIzquierdo());
             System.out.println(nodo.getEmpleado());
-            inOrden(nodo.getDerecho());
+            inOrdenRecursivo(nodo.getDerecho());
         }
+    }
+
+    public List<cEmpleado> obtenerTodosLosEmpleadosEnOrden() {
+        List<cEmpleado> listaEmpleados = new ArrayList<>();
+        obtenerTodosLosEmpleadosEnOrdenRecursivo(raiz, listaEmpleados);
+        return listaEmpleados;
+    }
+
+    private void obtenerTodosLosEmpleadosEnOrdenRecursivo(cNodo nodo, List<cEmpleado> lista) {
+        if (nodo != null) {
+            obtenerTodosLosEmpleadosEnOrdenRecursivo(nodo.getIzquierdo(), lista);
+            lista.add(nodo.getEmpleado());
+            obtenerTodosLosEmpleadosEnOrdenRecursivo(nodo.getDerecho(), lista);
+        }
+    }
+
+    public void vaciarArbol() {
+        raiz = null;
+    }
+
+    // Método de eliminación utilizando la sustitución con el predecesor inorder
+    public void eliminarConSustitucionPredecesor(int noEmpleado) {
+        raiz = eliminarNodoConPredecesor(raiz, noEmpleado);
+    }
+
+    private cNodo eliminarNodoConPredecesor(cNodo nodoActual, int noEmpleado) {
+        if (nodoActual == null) {
+            return null;
+        }
+
+        if (noEmpleado < nodoActual.getEmpleado().getNoEmpleado()) {
+            nodoActual.setIzquierdo(eliminarNodoConPredecesor(nodoActual.getIzquierdo(), noEmpleado));
+            return nodoActual;
+        } else if (noEmpleado > nodoActual.getEmpleado().getNoEmpleado()) {
+            nodoActual.setDerecho(eliminarNodoConPredecesor(nodoActual.getDerecho(), noEmpleado));
+            return nodoActual;
+        } else {
+            // Nodo encontrado
+            if (nodoActual.getIzquierdo() == null) {
+                return nodoActual.getDerecho();
+            } else if (nodoActual.getDerecho() == null) {
+                return nodoActual.getIzquierdo();
+            } else {
+                // Nodo con dos hijos - Sustituir con el predecesor inorder
+                cNodo predecesor = encontrarMaximo(nodoActual.getIzquierdo());
+                nodoActual.setEmpleado(predecesor.getEmpleado());
+                nodoActual.setIzquierdo(eliminarNodoConPredecesor(nodoActual.getIzquierdo(), predecesor.getEmpleado().getNoEmpleado()));
+                return nodoActual;
+            }
+        }
+    }
+
+    private cNodo encontrarMaximo(cNodo nodo) {
+        while (nodo.getDerecho() != null) {
+            nodo = nodo.getDerecho();
+        }
+        return nodo;
     }
 }
